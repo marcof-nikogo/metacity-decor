@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<wayfire>
+	<plugin name="metacity-decor">
+		<_short>Metacity decoration</_short>
+		<_long>decoration for wayfire windows using the metacity rendering.</_long>
+		<category>Effects</category>
+		<option name="metatheme" type="string">
+			<_short>Metacity Theme</_short>
+			<_long>Sets the metacity theme.</_long>
+			<default>none</default>
+		</option>
+		<!-- font in PangoFontDescription format -->
+		<option name="font" type="string">
+			<_short>Font</_short>
+			<_long>Sets the font to use for the title bars.</_long>
+			<default>sans-serif 11</default>
+		</option>
+		<!-- layout format: btn_left1,btn_left2:btn_right1,btn_right2
+		     available buttons: minimize, maximize, close, stick, spacer and shade.
+		     There is also menu but don't know how popup a menu from a plugin... 
+		-->
+		<option name="button_layout" type="string">
+			<_short>Button Layout</_short>
+			<_long>Button layout for toplevels.</_long>
+			<default>menu:minimize,maximize,close</default>
+		</option>
+		<option name="dialog_button_layout" type="string">
+			<_short>Dialog Button Layout</_short>
+			<_long>Button layout for dialogs.</_long>
+			<default>:close</default>
+		</option>
+		<!-- The background color normally set by gtk theming -->
+		<option name="background_color" type="color">
+			<_short>Background color</_short>
+			<_long>Sets the background color.</_long>
+			<default>#000000ff</default>
+		</option>
+		<!-- The text color normally set by gtk theming -->
+		<option name="text_color" type="color">
+			<_short>Text color</_short>
+			<_long>Sets the text color.</_long>
+			<default>#fafafaff</default>
+		</option>
+		<option name="ignore_views" type="string">
+			<_short>Decoration disabled for specified window types</_short>
+			<_long>Disables window decoration for windows matching the specified criteria.</_long>
+			<default>none</default>
+		</option>
+	</plugin>
+</wayfire>
