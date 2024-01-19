@@ -40,7 +40,7 @@ extern GdkRGBA title_color, bg_color;
 MetaTheme               *metatheme = NULL;
 MetaButtonLayout        button_layout, dialog_button_layout;
 PangoFontDescription    *font_desc;
-int text_height;
+int                     text_height;
 
 static wf::decoration_margins_t deco_margins =
     {
@@ -404,12 +404,10 @@ But I'm pretty new to wayfire, up to now my knowledge reaches so far...
                 }
                 if (view->pending_tiled_edges()) 
                 {
-                    state &= ~STATE_MAXIMIZED;
                     wf::get_core().default_wm->tile_request(view, 0);
                 } 
                 else 
                 {
-                    state |= STATE_MAXIMIZED;
                     wf::get_core().default_wm->tile_request(view, wf::TILED_EDGES_ALL);
                 }
             }
@@ -485,6 +483,10 @@ public:
         if(dims.width == 0 || dims.height == 0)
             return;
         auto view = _view.lock();
+        if (!view)
+            return;
+        view->damage();
+
         size = dims;
         bool maximized = view->toplevel()->pending().tiled_edges; 
 
@@ -511,9 +513,13 @@ public:
         height = size.height - deco_margins.top - deco_margins.bottom;
         if (maximized)
         {
+            state |= STATE_MAXIMIZED;
             width += (borders_delta * 2);
             height += (borders_delta * 2);
         }
+        else
+            state &= ~STATE_MAXIMIZED;
+
         //LOGI("resize ", view->get_title(), " ", dims, " ", width, " ", height);
         std::string title = view->get_title();
         for (int i = 0; i < 2; i++)
@@ -561,14 +567,10 @@ public:
             cairo_destroy (cr);
         }                        
 
-        if (auto view = _view.lock()) 
-        {
-            view->damage();
-            if (!view->toplevel()->current().fullscreen) {
-                this->cached_region = calculate_region (size);
-            }
-            view->damage();
+        if (!view->toplevel()->current().fullscreen) {
+            this->cached_region = calculate_region (size);
         }
+        view->damage();
     }
 
     wf::geometry_t get_bounding_box() override
@@ -587,7 +589,6 @@ public:
     wf::signal::connection_t<wf::view_activated_state_signal> on_view_activated;
     wf::signal::connection_t<wf::view_geometry_changed_signal> on_view_geometry_changed;
     wf::signal::connection_t<wf::view_fullscreen_signal> on_view_fullscreen;
-    int is_xwayland_surface = 0;
     wlr_surface *decorated_surface;
     
     simple_decorator_t(wayfire_toplevel_view view) 
@@ -628,17 +629,17 @@ public:
         LOGI("simple_decorator_t deleted");
     }
 
-    wf::decoration_margins_t get_margins(const wf::toplevel_state_t& state) 
+    wf::decoration_margins_t get_margins(const wf::toplevel_state_t& pending)
     {
-        if (state.fullscreen) {
+        if (pending.fullscreen) {
             return {0, 0, 0, 0};
         }
-        int delta = state.tiled_edges ? borders_delta : 0; 
+        uint edges = pending.tiled_edges;
         wf::decoration_margins_t margins;
-        margins.top = deco_margins.top - delta;
-        margins.left = deco_margins.left - delta;
-        margins.right = deco_margins.right - delta;
-        margins.bottom = deco_margins.bottom - delta;
+        margins.top = deco_margins.top - (edges & WLR_EDGE_TOP ? borders_delta : 0);
+        margins.left = deco_margins.left - (edges & WLR_EDGE_LEFT ? borders_delta : 0);
+        margins.right = deco_margins.right - (edges & WLR_EDGE_RIGHT ? borders_delta : 0);
+        margins.bottom = deco_margins.bottom - (edges & WLR_EDGE_BOTTOM ? borders_delta : 0);
         return margins;
     }
 };
